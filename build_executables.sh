@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 CGO_ENABLED=0
 
 function buildExecutable() {
@@ -9,7 +9,7 @@ function buildExecutable() {
     else
         EXTENSION=""
     fi
-    go build -o /executables/DockerImageSave-${GOOS}-${GOARCH}${EXTENSION} github.com/jadolg/DockerImageSave/cmd/DockerImageSave
+    go build -o DockerImageSave-${GOOS}-${GOARCH}${EXTENSION} github.com/jadolg/DockerImageSave/cmd/DockerImageSave
 
     if [[ $? -ne 0 ]]; then
         echo An error has occurred building executable for ${GOOS}/${GOARCH}
@@ -18,8 +18,8 @@ function buildExecutable() {
     echo Executable built for ${GOOS}/${GOARCH}
 }
 
-mkdir -p /executables/
-
 buildExecutable linux amd64
+buildExecutable linux arm
+buildExecutable linux arm64
 buildExecutable darwin amd64
 buildExecutable windows amd64

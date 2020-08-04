@@ -11,7 +11,11 @@ import (
 
 func downloadFile(afile string, animateProgress bool) bool {
 	client := grab.NewClient()
-	req, _ := grab.NewRequest(".", afile)
+	pwd, err := os.Getwd()
+	if err != nil {
+		return false
+	}
+	req, _ := grab.NewRequest(pwd, afile)
 	req.SkipExisting = false
 	req.NoResume = false
 
@@ -50,7 +54,6 @@ Loop:
 		fmt.Fprintf(os.Stderr, "Download failed: %v\n", err)
 		return false
 	}
-
-	fmt.Printf("Download saved to ./%v \n", resp.Filename)
+	fmt.Printf("Download saved to %v \n", resp.Filename)
 	return true
 }

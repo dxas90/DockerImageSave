@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/jadolg/DockerImageSave"
@@ -61,11 +62,12 @@ func SaveImageHandler(w http.ResponseWriter, r *http.Request) {
 
 	user := params["user"]
 	imageID := params["id"]
-	imageName := imageID
+	cleanImageID := strings.Replace(imageID, ":", "_", 1)
+	imageName := cleanImageID
 
 	if user != "" {
 		imageID = user + "/" + imageID
-		imageName = user + "_" + params["id"]
+		imageName = user + "_" + imageName
 	}
 
 	imageExists, err := dockerimagesave.ImageExists(imageID)
@@ -91,8 +93,14 @@ func SaveImageHandler(w http.ResponseWriter, r *http.Request) {
 		if !dockerimagesave.FileExists(downloadsFolder + "/" + imageName + ".tar") {
 			log.Printf("Saving image '%s' into file %s", imageID, downloadsFolder+"/"+imageName+".tar.zip")
 			go func() {
-				dockerimagesave.SaveImage(imageID, downloadsFolder)
-				dockerimagesave.ZipFiles(downloadsFolder+"/"+imageName+".tar.zip", []string{"/tmp/" + imageName + ".tar"})
+				err := dockerimagesave.SaveImage(imageID, downloadsFolder)
+				if err != nil {
+					log.Println(err)
+				}
+				err = dockerimagesave.ZipFiles(downloadsFolder+"/"+imageName+".tar.zip", []string{downloadsFolder + "/" + imageName + ".tar"})
+				if err != nil {
+					log.Println(err)
+				}
 				os.Remove(downloadsFolder + "/" + imageName + ".tar")
 				log.Printf("Removed uncompressed image file '%s'", downloadsFolder+"/"+imageName+".tar")
 			}()
